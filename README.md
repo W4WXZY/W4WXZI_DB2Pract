@@ -1,2 +1,2 @@
-# DB2
+# W4WXZI_DB2Pract
 
