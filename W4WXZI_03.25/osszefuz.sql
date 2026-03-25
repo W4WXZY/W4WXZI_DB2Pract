@@ -1,6 +1,6 @@
 DECLARE
-    vezeteknev VARCHAR2(50) := 'Vezetéknév';
-    keresztnev VARCHAR2(50) := 'Keresztnév';
+    vezeteknev VARCHAR2(50) := 'Sztancsik';
+    keresztnev VARCHAR2(50) := 'Máté';
     teljes_nev VARCHAR2(100);
 BEGIN
     teljes_nev := vezeteknev || ' ' || keresztnev;

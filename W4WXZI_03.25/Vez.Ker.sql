@@ -1,4 +1,4 @@
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Vezetéknév Keresztnév');
+    DBMS_OUTPUT.PUT_LINE('Sztancsik Máté');
 END;
 /
