@@ -1,0 +1,30 @@
+package konyvtar;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class TagKezelo {
+
+    public static void ujTagHozzaadas(String name, String email, String birthDate, String joinDate, double fee) {
+
+        String sql = "INSERT INTO members (name, email, birth_date, join_date, membership_fee) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = AdatbazisKapcsolat.kapcsolodas();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, name);
+            pstmt.setString(2, email);
+            pstmt.setString(3, birthDate);
+            pstmt.setString(4, joinDate);
+            pstmt.setDouble(5, fee);
+
+            pstmt.executeUpdate();
+
+            System.out.println("Uj tag sikeresen hozzaadva!");
+
+        } catch (SQLException e) {
+            System.out.println("Hiba a beszurasnal: " + e.getMessage());
+        }
+    }
+}

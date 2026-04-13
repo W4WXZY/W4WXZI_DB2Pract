@@ -1,0 +1,5 @@
+INDEX VERSION 1.134+C:\Users\Felhasználó\OneDrive\Asztali gép\adatb2\bead\.metadata\.plugins\org.eclipse.jdt.core
+1483790867.index
+1865797976.index
+1455969923.index
+2061170926.index

@@ -1,0 +1,13 @@
+package konyvtar;
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Program indul...");
+
+        AdatbazisLetrehozo.tablakatLetrehoz();
+        TagKezelo.tagokListazasa();
+        TagKezelo.tagKeresesNevAlapjan("Kiss");
+
+        System.out.println("Program vege.");
+    }
+}

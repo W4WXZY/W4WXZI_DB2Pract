@@ -1,0 +1,26 @@
+package konyvtar;
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Program indul...");
+
+        AdatbazisLetrehozo.tablakatLetrehoz();
+
+        System.out.println("\nModositas elott:");
+        TagKezelo.tagokListazasa();
+
+        TagKezelo.tagModositasa(
+            1,
+            "Kiss Bela Modositva",
+            "bela2@example.com",
+            "1990-05-10",
+            "2024-01-01",
+            6500
+        );
+
+        System.out.println("\nModositas utan:");
+        TagKezelo.tagokListazasa();
+
+        System.out.println("Program vege.");
+    }
+}
