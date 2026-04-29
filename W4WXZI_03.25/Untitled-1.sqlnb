@@ -1,0 +1,44 @@
+cells:
+  - kind: 2
+    value: "CREATE OR REPLACE PACKAGE ZooPackage AS\r
+
+      \    PROCEDURE NewPet (i in NUMBER, in CHAR, fajta in CHAR, szul in DATE,
+      suly is NUMBER);\r
+
+      \    PROCEDURE DelPet(i in NUMBER);\r
+
+      \    PROCEDURE ModPet (i in NUMBER, gond in CHAR);\r
+
+      \    PROCEDURE ListPet;\r
+
+      \    FUNCTION PetNumber return NUMBER;\r
+
+      END ZooPackage;\r
+
+      \r
+
+      CREATE or REPLACE PACKAGE body ZooPackage AS\r
+
+      \    PROCEDURE NewPet(i in NUMBER, nev in CHAR, fajta in CHAR, szul in
+      DATE, suly in NUMBER);\r
+
+      \    BEGIN\r
+
+      \        INSERT INTO Zoo VALUES (i, nev, fajta, szul);\r
+
+      \    END;\r
+
+      \r
+
+      PROCEDURE DelPet (i in NUMBER) is\r
+
+      BEGIN\r
+
+      \    DELETE FROM Zoo WHERE id=i;\r
+
+      END\r
+
+      \r
+
+      PROCEDURE ModPet (i in NUMBER )\r\n"
+    languageId: oracle-sql

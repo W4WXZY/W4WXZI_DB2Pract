@@ -1,0 +1,82 @@
+CREATE TABLE Naplo5 (
+    Esemeny VARCHAR(20),
+    Adat VARCHAR(100),
+    Datum TIMESTAMP
+);
+
+
+CREATE TABLE Vasarlo (
+    VID CHAR(3),
+    Nev VARCHAR2(30) NOT NULL,
+    Cim VARCHAR2(30),
+    Fizmod NUMBER(3)
+);
+
+INSERT INTO Vasarlo VALUES ('v01', 'Kék Alma', 'Mc. Kék u.12', 2);
+INSERT INTO Vasarlo VALUES ('v02', 'Zöld Gabi', 'Mc. Hó u.72', 3);
+INSERT INTO Vasarlo VALUES ('v03', 'Feke F.', 'Mc. Kő u.25', 1);
+INSERT INTO Vasarlo VALUES ('v04', 'Korcs Éva', 'Eger. Lap...', 1);
+INSERT INTO Vasarlo VALUES ('v05', 'Kis Béla', 'Eger. Bé u.9', 2);
+INSERT INTO Vasarlo VALUES ('v06', 'Kis Jenő', 'Eger. Cé ...', 3);
+INSERT INTO Vasarlo VALUES ('v07', 'Kis Noé', 'Eger. Cé ...', 4);
+INSERT INTO Vasarlo VALUES ('v08', 'Kis Tas', 'Eger. Cé ...', 1);
+INSERT INTO Vasarlo VALUES ('v09', 'Hó Manó', 'Nvek. Tó u.74', 2);
+INSERT INTO Vasarlo VALUES ('v10', 'Ká Rozi', 'Nvek. Ká u.5', 3);
+INSERT INTO Vasarlo VALUES ('v11', 'Víz Jenő', 'Mc. Útu.39', 3);
+
+CREATE OR REPLACE TRIGGER TB AFTER INSERT ON Vasarlo FOR EACH ROW
+BEGIN
+INSERT INTO Naplo5 VALUES ('Beszúrás', :NEW.VID||' '||:NEW.Nev||' '||:NEW.Cim, SYSTIMESTAMP);
+END;
+
+
+INSERT INTO Vasarlo VALUES ('v12', 'Kiss Béla', 'Mc. Kő u.11', 2);
+INSERT INTO Vasarlo VALUES ('v13', 'Kiss Géza', 'Mc. Hó u.11', 3);
+INSERT INTO Vasarlo VALUES ('v14', 'Nagy Anna', 'Eger. Tó u.5', 1);
+
+
+drop trigger TB;
+
+CREATE OR REPLACE TRIGGER TM AFTER UPDATE ON Vasarlo FOR EACH ROW
+DECLARE
+    s VARCHAR(100);
+BEGIN
+    IF :old.vid != :new.vid THEN
+        s := s || :old.vid || '_' || :new.vid || ',';
+    END IF;
+
+    IF :old.nev != :new.nev THEN
+        s := s || :old.nev || '_' || :new.nev || ',';
+    END IF;
+
+    IF :old.cim != :new.cim THEN
+        s := s || :old.cim || '_' || :new.cim || ',';
+    END IF;
+
+    IF :old.fizmod != :new.fizmod THEN
+        s := s || :old.fizmod || '_' || :new.fizmod || ',';
+    END IF;
+
+    s := SUBSTR(s, 1, LENGTH(s) - 1);
+
+    INSERT INTO Naplo5
+    VALUES ('Módosítás', s, SYSDATE);
+END;
+
+select * from Vasarlo
+
+select * from Naplo5
+
+
+begin
+update Vasarlo set vid='v10', nev='Víz Jenő' where vid='v03';
+end;
+
+
+CREATE OR REPLACE TRIGGER TT after delete on Vasarlo for each row
+begin
+    insert into Naplo5 values('Törlés', :old.vid||'_'||user, sysdate);
+end
+
+delete from Vasarlo where vid in ('v20','v14');
+
