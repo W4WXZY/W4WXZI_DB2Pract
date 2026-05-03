@@ -1,0 +1,287 @@
+-- Új termék felvitele
+BEGIN
+    uj_termek_felvitel('HP Laptop', 250000, 5);
+END;
+/
+
+-- Termék módosítása ID alapján
+BEGIN
+    termek_modosit(1, 'Laptop PRO', 300000, 3);
+END;
+/
+
+-- Termék törlése ID alapján
+BEGIN
+    termek_torol(3);
+END;
+/
+
+-- Egy termék nevének lekérése ID alapján
+SELECT termek_nev_leker(24) FROM dual;
+
+-- Összes termék mennyiségének lekérése
+SELECT ossz_mennyiseg FROM dual;
+
+-- Package-ben lévő felvitel használata
+BEGIN
+    pkg_termek.uj_termek_felvitel('Gépház', -80000, 50);
+END;
+/
+
+-- Explicit kurzoros lista kiírása
+BEGIN
+    termek_lista_kurzor;
+END;
+/
+
+-- Hibás adat tesztelése, itt hibát kell kapni
+BEGIN
+    uj_termek_felvitel('Hibás', -10000, 5);
+END;
+/
+
+-- Táblák ellenőrzése
+SELECT * FROM termek;
+SELECT * FROM naplo;
+
+
+CREATE TABLE termek (
+    id NUMBER,
+    nev VARCHAR2(100),
+    ar NUMBER,
+    mennyiseg NUMBER
+);
+
+CREATE TABLE naplo (
+    id NUMBER,
+    muvelet VARCHAR2(20),
+    termek_id NUMBER,
+    datum DATE
+);
+
+CREATE SEQUENCE termek_seq START WITH 1 INCREMENT BY 1;
+
+CREATE SEQUENCE naplo_seq START WITH 1 INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER trg_termek_id
+BEFORE INSERT ON termek
+FOR EACH ROW
+BEGIN
+    IF :NEW.id IS NULL THEN
+        :NEW.id := termek_seq.NEXTVAL;
+    END IF;
+END;
+/
+
+CREATE OR REPLACE TRIGGER trg_termek_kontroll
+BEFORE INSERT OR UPDATE ON termek
+FOR EACH ROW
+BEGIN
+    IF :NEW.ar < 0 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Az ár nem lehet negatív!');
+    END IF;
+
+    IF :NEW.mennyiseg < 0 THEN
+        RAISE_APPLICATION_ERROR(-20004, 'A mennyiség nem lehet negatív!');
+    END IF;
+END;
+/
+
+CREATE OR REPLACE TRIGGER trg_termek_naplo
+AFTER INSERT OR UPDATE OR DELETE ON termek
+FOR EACH ROW
+BEGIN
+    IF INSERTING THEN
+        INSERT INTO naplo (id, muvelet, termek_id, datum)
+        VALUES (naplo_seq.NEXTVAL, 'INSERT', :NEW.id, SYSDATE);
+
+    ELSIF UPDATING THEN
+        INSERT INTO naplo (id, muvelet, termek_id, datum)
+        VALUES (naplo_seq.NEXTVAL, 'UPDATE', :NEW.id, SYSDATE);
+
+    ELSIF DELETING THEN
+        INSERT INTO naplo (id, muvelet, termek_id, datum)
+        VALUES (naplo_seq.NEXTVAL, 'DELETE', :OLD.id, SYSDATE);
+    END IF;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE uj_termek_felvitel (
+    p_nev IN VARCHAR2,
+    p_ar IN NUMBER,
+    p_mennyiseg IN NUMBER
+)
+AS
+BEGIN
+    INSERT INTO termek (nev, ar, mennyiseg)
+    VALUES (p_nev, p_ar, p_mennyiseg);
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE termek_modosit (
+    p_id IN NUMBER,
+    p_nev IN VARCHAR2,
+    p_ar IN NUMBER,
+    p_mennyiseg IN NUMBER
+)
+AS
+BEGIN
+    UPDATE termek
+    SET nev = p_nev,
+        ar = p_ar,
+        mennyiseg = p_mennyiseg
+    WHERE id = p_id;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Nincs ilyen ID!');
+    END IF;
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE termek_torol (
+    p_id IN NUMBER
+)
+AS
+BEGIN
+    DELETE FROM termek
+    WHERE id = p_id;
+
+    IF SQL%ROWCOUNT = 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Nincs ilyen ID!');
+    END IF;
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE FUNCTION termek_nev_leker (
+    p_id IN NUMBER
+)
+RETURN VARCHAR2
+AS
+    v_nev VARCHAR2(100);
+BEGIN
+    SELECT nev INTO v_nev
+    FROM termek
+    WHERE id = p_id;
+
+    RETURN v_nev;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 'Nincs ilyen termék';
+END;
+/
+
+CREATE OR REPLACE FUNCTION ossz_mennyiseg
+RETURN NUMBER
+AS
+    v_osszeg NUMBER;
+BEGIN
+    SELECT SUM(mennyiseg) INTO v_osszeg
+    FROM termek;
+
+    RETURN v_osszeg;
+END;
+/
+
+CREATE OR REPLACE PACKAGE pkg_termek AS
+
+    PROCEDURE uj_termek_felvitel (
+        p_nev IN VARCHAR2,
+        p_ar IN NUMBER,
+        p_mennyiseg IN NUMBER
+    );
+
+    PROCEDURE termek_modosit (
+        p_id IN NUMBER,
+        p_nev IN VARCHAR2,
+        p_ar IN NUMBER,
+        p_mennyiseg IN NUMBER
+    );
+
+    FUNCTION ossz_mennyiseg
+    RETURN NUMBER;
+
+END pkg_termek;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_termek AS
+
+    PROCEDURE uj_termek_felvitel (
+        p_nev IN VARCHAR2,
+        p_ar IN NUMBER,
+        p_mennyiseg IN NUMBER
+    )
+    AS
+    BEGIN
+        INSERT INTO termek (nev, ar, mennyiseg)
+        VALUES (p_nev, p_ar, p_mennyiseg);
+
+        COMMIT;
+    END;
+
+    PROCEDURE termek_modosit (
+        p_id IN NUMBER,
+        p_nev IN VARCHAR2,
+        p_ar IN NUMBER,
+        p_mennyiseg IN NUMBER
+    )
+    AS
+    BEGIN
+        UPDATE termek
+        SET nev = p_nev,
+            ar = p_ar,
+            mennyiseg = p_mennyiseg
+        WHERE id = p_id;
+
+        IF SQL%ROWCOUNT = 0 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Nincs ilyen ID!');
+        END IF;
+
+        COMMIT;
+    END;
+
+    FUNCTION ossz_mennyiseg
+    RETURN NUMBER
+    AS
+        v_osszeg NUMBER;
+    BEGIN
+        SELECT SUM(mennyiseg) INTO v_osszeg
+        FROM termek;
+
+        RETURN v_osszeg;
+    END;
+
+END pkg_termek;
+/
+
+CREATE OR REPLACE PROCEDURE termek_lista_kurzor
+AS
+    CURSOR c_termek IS
+        SELECT id, nev, ar, mennyiseg
+        FROM termek;
+
+    v_id termek.id%TYPE;
+    v_nev termek.nev%TYPE;
+    v_ar termek.ar%TYPE;
+    v_mennyiseg termek.mennyiseg%TYPE;
+BEGIN
+    OPEN c_termek;
+
+    LOOP
+        FETCH c_termek INTO v_id, v_nev, v_ar, v_mennyiseg;
+        EXIT WHEN c_termek%NOTFOUND;
+
+        DBMS_OUTPUT.PUT_LINE(
+            v_id || ' - ' || v_nev || ' - ' || v_ar || ' Ft - ' || v_mennyiseg || ' db'
+        );
+    END LOOP;
+
+    CLOSE c_termek;
+END;
+/
